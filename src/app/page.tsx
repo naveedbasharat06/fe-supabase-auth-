@@ -1,8 +1,10 @@
 import Image from "next/image";
 import supabase from "../../lib/supabaseClient";
-// import SupaTasks from "./components/SupaTasks";
+
 import NavBar from "./components/Navbar";
-// import Auth from "./components/Auth"
+import NewProduct from "./components/NewProduct";
+import AllProduct from "./components/AllProduct";
+
 
 
 
@@ -12,11 +14,12 @@ export default function Home() {
     
 
   return (
-    <div>
+    <div >
      
       <NavBar />
-     {/* <SupaTasks />
-     <Auth/> */}
+      <NewProduct />
+      <AllProduct />
+     
     </div>
   );
 }

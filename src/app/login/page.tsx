@@ -29,10 +29,15 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data,error } = await supabase.auth.signInWithPassword({
       email: form.email,
       password: form.password,
     });
+    console.log(data.session);
+
+    const authsession = supabase.auth.getSession();
+    console.log(authsession);
+
 
     if (error) {
       setToast({ open: true, message: error.message, severity: "error" });
@@ -56,7 +61,7 @@ export default function LoginPage() {
             Login
           </Button>
           <Typography align="center" sx={{ mt: 2 }}>
-            Don&apos;t have an account?{" "}
+            Don't have an account?
             <Button onClick={() => router.push("/signup")}>Signup</Button>
           </Typography>
         </form>
