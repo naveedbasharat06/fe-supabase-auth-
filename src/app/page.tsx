@@ -8,12 +8,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 
-import NavBar from "./components/Navbar";
-import NewProduct from "./components/NewProduct";
-import AllProduct from "./components/AllProduct";
-
-
-
 
 export default function Home() {
   const { user, role, loading } = useAuth();
@@ -36,9 +30,7 @@ export default function Home() {
   return (
     <div >
      
-      {/* <NavBar /> */}
-      {/* <NewProduct />
-      <AllProduct /> */}
+     
       <Typography variant="h1">Home</Typography>
       {/* <CircularProgress /> */}
      

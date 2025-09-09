@@ -1,6 +1,6 @@
 "use client";
 
-import { ProtectedRoute } from '../components/ProtectedRoute';
+// import { ProtectedRoute } from '../components/ProtectedRoute';
 import { useAuth } from '../context/AuthContext';
 import { Box, Typography, Button, Paper, Container } from '@mui/material';
 
@@ -8,7 +8,7 @@ export default function AdminDashboard() {
   const { user, signOut } = useAuth();
 
   return (
-    <ProtectedRoute requiredRole="admin">
+    // <ProtectedRoute requiredRole="admin">
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
           <Paper sx={{ p: 4 }}>
@@ -19,6 +19,6 @@ export default function AdminDashboard() {
           </Paper>
         </Box>
       </Container>
-    </ProtectedRoute>
+    // </ProtectedRoute>
   );
 }

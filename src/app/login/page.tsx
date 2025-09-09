@@ -26,19 +26,14 @@ export default function LoginPage() {
       });
 
       if (authError) throw new Error(authError.message);
-      if (!data.user) throw new Error("No user data found");
+      
+
 
       const { data: profileData, error: profileError } = await supabase
         .from("profiles").select("role").eq("user_id", data.user.id).single();
         console.log(data,"getting role data if esists")
          let role = "visitor";
-      if (profileError && profileError.code === 'PGRST116') {
-        await supabase.from("profiles").insert([{
-          user_id: data.user.id, email: data.user.email, name: form.name, lastname: form.lastname
-        }]);
-      } else if (profileData) {
-        role = profileData.role;
-      }
+     
 
       if (role === "superadmin") router.push("/superadmin");
       else if (role === "admin") router.push("/admin");

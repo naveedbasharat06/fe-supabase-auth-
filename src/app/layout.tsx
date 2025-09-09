@@ -6,6 +6,7 @@ import { ThemeProvider } from "@emotion/react";
 import theme from "@/theme";
 import { CssBaseline } from '@mui/material';
 import { AuthProvider } from './context/AuthContext';
+import ReduxProvider from '@/provider/redux/ReduxProvider';
 
 export default function RootLayout({
   children,
@@ -15,8 +16,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={``}
       >
+        <ReduxProvider>
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />
@@ -25,6 +26,7 @@ export default function RootLayout({
             </AuthProvider>
           </ThemeProvider>
         </AppRouterCacheProvider>
+        </ReduxProvider>
       </body>
     </html>
   );

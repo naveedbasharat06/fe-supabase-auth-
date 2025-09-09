@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        await fetchUserRole(session.user.id);
+        // await fetchUserRole(session.user.id);
       } else {
         setRole('visitor');
       }
@@ -127,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (session?.user) {
           console.log('User found:', session.user.email);
-          await fetchUserRole(session.user.id);
+          // await fetchUserRole(session.user.id);
         } else {
           console.log('No user session found');
           setRole('visitor');
@@ -151,7 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (session?.user) {
           console.log('User logged in:', session.user.email);
-          await fetchUserRole(session.user.id);
+          // await fetchUserRole(session.user.id);
         } else {
           console.log('User logged out');
           setRole('visitor');

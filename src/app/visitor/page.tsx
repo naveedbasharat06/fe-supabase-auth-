@@ -1,5 +1,5 @@
 "use client";
-import { ProtectedRoute } from '../components/ProtectedRoute';
+
 import { useAuth } from '../context/AuthContext';
 import { Box, Typography, Button, Paper, Container, Alert, Chip, Card, CardContent } from '@mui/material';
 import { useState } from 'react';
@@ -73,7 +73,7 @@ export default function VisitorDashboard() {
   }
 
   return (
-    <ProtectedRoute>
+   
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
           <Paper sx={{ p: 4, mb: 3 }}>
@@ -167,6 +167,6 @@ export default function VisitorDashboard() {
           </Paper>
         </Box>
       </Container>
-    </ProtectedRoute>
+    
   );
 }

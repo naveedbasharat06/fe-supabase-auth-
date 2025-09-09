@@ -2,7 +2,7 @@
 
 import AllProduct from "../components/AllProduct"
 import NewProduct from "../components/NewProduct"
-import { ProtectedRoute } from '../components/ProtectedRoute';
+
 
 import { Box, Typography, Button, Paper, Container } from '@mui/material';
 import { useAuth } from "../context/AuthContext";
@@ -14,7 +14,7 @@ export default function page({}: Props) {
  const { user, signOut } = useAuth();
  
    return (
-     <ProtectedRoute requiredRole="superadmin">
+    
        <Container maxWidth="lg">
          <Box sx={{ py: 4 }}>
            <Paper sx={{ p: 4 }}>
@@ -30,6 +30,6 @@ export default function page({}: Props) {
            </Paper>
          </Box>
        </Container>
-     </ProtectedRoute>
+    
    );
 }

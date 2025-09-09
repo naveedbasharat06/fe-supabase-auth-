@@ -12,11 +12,11 @@ export default function LoginButton() {
     await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        // after GitHub -> Supabase, user will be redirected to this callback
+       
         redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
       },
     })
-    // signInWithOAuth redirects the browser to GitHub (no further action needed here)
+    
   }
 
   return (

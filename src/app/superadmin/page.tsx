@@ -2,7 +2,7 @@
 
 import AllProduct from '../components/AllProduct';
 import NewProduct from '../components/NewProduct';
-import { ProtectedRoute } from '../components/ProtectedRoute';
+
 import { useAuth } from '../context/AuthContext';
 import { Box, Typography, Button, Paper, Container } from '@mui/material';
 
@@ -10,7 +10,7 @@ export default function SuperadminDashboard() {
   const { user, signOut } = useAuth();
 
   return (
-    <ProtectedRoute requiredRole="superadmin">
+   
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
           <Paper sx={{ p: 4 }}>
@@ -26,6 +26,6 @@ export default function SuperadminDashboard() {
           </Paper>
         </Box>
       </Container>
-    </ProtectedRoute>
+    
   );
 }
