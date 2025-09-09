@@ -4,6 +4,8 @@
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { ThemeProvider } from "@emotion/react";
 import theme from "@/theme";
+import { CssBaseline } from '@mui/material';
+import { AuthProvider } from './context/AuthContext';
 
 export default function RootLayout({
   children,
@@ -17,7 +19,10 @@ export default function RootLayout({
       >
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <AuthProvider>
             {children}
+            </AuthProvider>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>
