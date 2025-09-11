@@ -11,12 +11,13 @@ export async function middleware(req: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.redirect(new URL("/login", req.url))
 
-  return NextResponse.next()
-}
+const {data:user, error} = await supabase.auth.getSession()
+if (!user){ return NextResponse.redirect(new URL("/login", req.url))} }
 
+  // return NextResponse.next()
+
+      
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|login).*)", 
