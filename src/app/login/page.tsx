@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -13,10 +13,10 @@ import {
   Divider,
 } from "@mui/material";
 import { GitHub } from "@mui/icons-material";
-import  supabase  from "../../../lib/supabaseClient";
-import  useAppDispatch  from "../../provider/redux/sessionSlice";
+import supabase from "../../../lib/supabaseClient";
 import { setSession } from "../../provider/redux/sessionSlice";
 import { useDispatch } from "react-redux";
+import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -38,32 +38,69 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { data, error: authError } =
-        await supabase.auth.signInWithPassword({
+      const { data, error: authError } = await supabase.auth.signInWithPassword(
+        {
           email: form.email,
           password: form.password,
-        });
-
-      console.log(data, "supabase data is here");
+        }
+      );
 
       if (authError) throw new Error(authError.message);
 
-      if (data.session) {
-        dispatch(setSession(data.session));
-        console.log( data.session,"dispatch data is here") // 👉 store in Redux
+      console.log(data, "supabase data is here");
+
+      const userSession = data.session;
+      const user = data.user;
+      
+      if (userSession && user) {
+       
+        dispatch(setSession(userSession));
+        
+        
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("role, name, lastname, email")
+          .eq("id", user.id) 
+          .single();
+
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          throw new Error("Could not fetch user profile");
+        }
+
+        console.log("profile:", profile);
+
+        const role = profile?.role || "visitor"; 
+        console.log("role:", role);
+
+        
+        Cookies.set("role", role); 
+        
+
+        
+
+     
+        if (role === "admin") {
+          router.push("/admin");
+        } else if (role === "superadmin") {
+          router.push("/superadmin");
+        } else {
+          router.push("/visitor");
+        }
+
+        setToast({
+          open: true,
+          message: "Login successful!",
+          severity: "success",
+        });
+      } else {
+        throw new Error("No session or user data returned");
       }
-
-      setToast({
-        open: true,
-        message: "Login successful!",
-        severity: "success",
-      });
-
-       router.push("/dashboard"); 
     } catch (err: any) {
+      console.error("Login error:", err);
       setToast({
         open: true,
-        message: err.message || "Login failed",
+        message: err.message || "Login failed. Please check your credentials.",
         severity: "error",
       });
     } finally {
@@ -72,15 +109,22 @@ export default function LoginPage() {
   };
 
   const handleGitHubSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "github",
-    });
-    if (error)
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      if (error) throw error;
+    } catch (error: any) {
       setToast({
         open: true,
-        message: error.message,
+        message: error.message || "GitHub login failed",
         severity: "error",
       });
+    }
   };
 
   return (
@@ -98,20 +142,10 @@ export default function LoginPage() {
         elevation={6}
         sx={{ p: 4, width: "100%", maxWidth: 400, borderRadius: 2 }}
       >
-        <Typography
-          variant="h5"
-          align="center"
-          gutterBottom
-          fontWeight="bold"
-        >
+        <Typography variant="h5" align="center" gutterBottom fontWeight="bold">
           Welcome Back
         </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          align="center"
-          mb={3}
-        >
+        <Typography variant="body2" color="text.secondary" align="center"  mb={3}>
           Sign in to your account
         </Typography>
 
@@ -188,4 +222,7 @@ export default function LoginPage() {
       </Snackbar>
     </Box>
   );
-}
+}  
+
+
+

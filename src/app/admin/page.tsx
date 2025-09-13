@@ -1,14 +1,27 @@
 "use client";
 
-// import { ProtectedRoute } from '../components/ProtectedRoute';
+import Router from 'next/router';
+import supabase from '../../../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { Box, Typography, Button, Paper, Container } from '@mui/material';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function AdminDashboard() {
+ function AdminDashboard() {
   const { user, signOut } = useAuth();
+  const router = useRouter();
 
+  const handleLogout = async ()=>{
+    await supabase.auth.signOut();
+  }
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+    }
+  }, [Router, user])
   return (
-    // <ProtectedRoute requiredRole="admin">
+    
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
           <Paper sx={{ p: 4 }}>
@@ -19,6 +32,7 @@ export default function AdminDashboard() {
           </Paper>
         </Box>
       </Container>
-    // </ProtectedRoute>
+   
   );
 }
+export default AdminDashboard

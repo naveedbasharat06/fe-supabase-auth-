@@ -15,7 +15,7 @@ import {
 import { GitHub } from "@mui/icons-material";
 import supabase from "../../../lib/supabaseClient";
 import { useDispatch } from "react-redux";
-import { setUser } from "@/provider/redux/authSlice"; // ✅ named import
+import { setUser } from "@/provider/redux/authSlice";
 
 export default function SignupPage() {
   const [form, setForm] = useState({
@@ -48,7 +48,7 @@ export default function SignupPage() {
         throw new Error("Passwords do not match");
       }
 
-      // 🔹 Supabase signup
+      // 🔹 Supabase signup with user metadata
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
@@ -56,7 +56,7 @@ export default function SignupPage() {
           data: {
             name: form.name,
             lastname: form.lastname,
-            role: "visitor",
+            role: "visitor", // Default role
           },
         },
       });
@@ -67,20 +67,10 @@ export default function SignupPage() {
         throw new Error("Signup failed: user not returned");
       }
 
-      
-      const { error: profileError } = await supabase.from("profiles").insert([
-        {
-          user_id: data.user.id,
-          role: "visitor",
-          name: form.name,
-          lastname: form.lastname,
-          email: form.email,
-        },
-      ]);
+      // The trigger will automatically create the profile
+      // So we don't need to manually insert into the profiles table
 
-      if (profileError) throw new Error(profileError.message);
-
-     
+      // 🔹 Dispatch user data to Redux
       dispatch(
         setUser({
           user_id: data.user.id,
@@ -94,11 +84,12 @@ export default function SignupPage() {
       // 🔹 Toast success
       setToast({
         open: true,
-        message: "Signup successful! Please check your email.",
+        message: "Signup successful! Please check your email for verification.",
         severity: "success",
       });
 
-      setTimeout(() => router.push("/login"), 2000);
+      // Redirect to login after a short delay
+      setTimeout(() => router.push("/login"), 3000);
     } catch (error: any) {
       let errorMessage = error.message || "Error during signup";
       if (error.message?.includes("User already registered")) {
@@ -116,7 +107,14 @@ export default function SignupPage() {
   };
 
   const handleGitHubSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider: "github" });
+    // For GitHub OAuth, we need to handle the profile creation differently
+    // You might want to create a separate trigger or handle it in the callback
+    const { error } = await supabase.auth.signInWithOAuth({ 
+      provider: "github",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
+    });
     if (error) {
       setToast({ open: true, message: error.message, severity: "error" });
     }
