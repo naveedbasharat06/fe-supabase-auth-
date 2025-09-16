@@ -6,12 +6,21 @@ import NewProduct from "../components/NewProduct"
 
 import { Box, Typography, Button, Paper, Container } from '@mui/material';
 import { useAuth } from "../context/AuthContext";
+import {useEffect} from "react"
+import { useRouter } from 'next/navigation';
 
 
 type Props = {}
 
 export default function page({}: Props) {
  const { user, signOut } = useAuth();
+ const router = useRouter();
+
+   useEffect(() => {
+     if (!user) {
+       router.push('/login');
+     }
+   }, [ user])
  
    return (
     

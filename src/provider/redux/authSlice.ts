@@ -5,7 +5,7 @@ interface UserState {
   name: string | null;
   lastname: string | null;
   email: string | null;
-  role: string | null;
+  user_role: string | null;
 }
 
 const initialState: UserState = {
@@ -13,7 +13,7 @@ const initialState: UserState = {
   name: null,
   lastname: null,
   email: null,
-  role: null,
+  user_role: null,
 };
 
 export const authSlice = createSlice({

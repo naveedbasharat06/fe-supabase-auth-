@@ -38,52 +38,84 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword(
-        {
-          email: form.email,
-          password: form.password,
-        }
-      );
+      // 🔹 Login with email/password
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
+      });
 
       if (authError) throw new Error(authError.message);
 
-      console.log(data, "supabase data is here");
-
       const userSession = data.session;
       const user = data.user;
-      
-      if (userSession && user) {
-       
-        dispatch(setSession(userSession));
-        
-        
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("role, name, lastname, email")
-          .eq("id", user.id) 
-          .single();
 
-        if (profileError) {
-          console.error("Error fetching profile:", profileError);
-          throw new Error("Could not fetch user profile");
+      if (userSession && user) {
+        // Get user metadata (name, lastname stored at signup)
+        const name = user.user_metadata?.name || "";
+        const lastname = user.user_metadata?.lastname || "";
+
+        console.log("Auth user:", user);
+
+        let role = "visitor"; // Default role
+
+        try {
+          // 🔹 SOLUTION: Use two separate queries to avoid join issues
+          // First, get the role_id from user_roles
+          const { data: userRoleData, error: userRoleError } = await supabase
+            .from("user_roles")
+            .select("role_id")
+            .eq("user_id", user.id)
+            .maybeSingle(); 
+
+          if (userRoleError) {
+            console.error("Error fetching user role ID:", userRoleError.message);
+            // Continue with default role instead of throwing error
+          } else if (userRoleData && userRoleData.role_id) {
+            // Then, get the role name from roles table
+            const { data: roleData, error: roleError } = await supabase
+              .from("roles")
+              .select("name")
+              .eq("id", userRoleData.role_id)
+              .maybeSingle();
+
+            if (roleError) {
+              console.error("Error fetching role name:", roleError.message);
+              // Continue with default role
+            } else if (roleData) {
+              role = roleData.name;
+            }
+          } else {
+            console.warn("No role found for user, using default 'visitor' role");
+          }
+        } catch (roleFetchError) {
+          console.error("Error in role fetching process:", roleFetchError);
+          // Continue with default role instead of breaking login
         }
 
-        console.log("profile:", profile);
+        console.log("User role:", role);
 
-        const role = profile?.role || "visitor"; 
-        console.log("role:", role);
+        // 🔹 Store role in cookie
+        Cookies.set("role", role, { expires: 7 });
 
-        
-        Cookies.set("role", role); 
-        
+        // 🔹 Dispatch to Redux
+        dispatch( 
+          setSession({
+            session: userSession,
+            user: {
+              id: user.id,
+              name,
+              lastname,
+              email: user.email,
+              role,
+            },
+          })
+        );
 
-        
-
-     
+        // 🔹 Redirect based on role
         if (role === "admin") {
           router.push("/admin");
         } else if (role === "superadmin") {
-          router.push("/superadmin");
+          router.push("/product");
         } else {
           router.push("/visitor");
         }
@@ -145,7 +177,12 @@ export default function LoginPage() {
         <Typography variant="h5" align="center" gutterBottom fontWeight="bold">
           Welcome Back
         </Typography>
-        <Typography variant="body2" color="text.secondary" align="center"  mb={3}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          align="center"
+          mb={3}
+        >
           Sign in to your account
         </Typography>
 
@@ -222,7 +259,4 @@ export default function LoginPage() {
       </Snackbar>
     </Box>
   );
-}  
-
-
-
+}

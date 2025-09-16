@@ -184,7 +184,7 @@ import { useRouter } from 'next/navigation';
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
           <Paper sx={{ p: 4 }}>
-            <Typography variant="h4" gutterBottom>Admin Dashboard</Typography>
+            <Typography variant="h4" gutterBottom>Visitor Dashboard</Typography>
             <Typography variant="body1" gutterBottom>Welcome, {user?.email}</Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>Role: visitor</Typography>
             <Button variant="contained" color="error" onClick={signOut} sx={{ mt: 2 }}>Sign Out</Button>

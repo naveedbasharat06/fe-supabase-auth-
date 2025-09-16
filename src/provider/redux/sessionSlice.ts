@@ -4,28 +4,28 @@ import type { Session } from "@supabase/supabase-js"
 // State: keep session + role
 interface SessionState {
   session: Session | null
-  role: string
+  user_role: string
 }
 
 const initialState: SessionState = {
   session: null,
-  role: "visitor", // default role
+  user_role: "visitor", // default role
 }
 
 const sessionSlice = createSlice({
   name: "session",
   initialState,
   reducers: {
-    setSession: (state, action: PayloadAction<{ session: Session | null; role: string }>) => {
+    setSession: (state, action: PayloadAction<{ session: Session | null; user_role: string }>) => {
       state.session = action.payload.session
-      state.role = action.payload.role
+      state.user_role = action.payload.user_role
     },
     clearSession: (state) => {
       state.session = null
-      state.role = "visitor"
+      state.user_role = "visitor"
     },
     updateRole: (state, action: PayloadAction<string>) => {
-      state.role = action.payload
+      state.user_role = action.payload
     },
   },
 })
