@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -14,9 +14,8 @@ import {
 } from "@mui/material";
 import { GitHub } from "@mui/icons-material";
 import supabase from "../../../lib/supabaseClient";
-import { setSession } from "../../provider/redux/sessionSlice";
 import { useDispatch } from "react-redux";
-import Cookies from "js-cookie";
+import { setUser } from "@/provider/redux/authSlice";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -26,6 +25,7 @@ export default function LoginPage() {
     message: "",
     severity: "success" as "success" | "error",
   });
+
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -38,101 +38,61 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // 🔹 Login with email/password
+      // 1. Authenticate user
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: form.email,
         password: form.password,
       });
 
       if (authError) throw new Error(authError.message);
+      if (!data.user) throw new Error("No user returned");
+      console.log("data user is ",data.user)
+      console.log("data session is here", data.session)
 
-      const userSession = data.session;
-      const user = data.user;
+      const userId = data.user.id;
 
-      if (userSession && user) {
-        // Get user metadata (name, lastname stored at signup)
-        const name = user.user_metadata?.name || "";
-        const lastname = user.user_metadata?.lastname || "";
+      // 2. Fetch user role from Supabase view
+      const { data: roleData, error: roleError } = await supabase
+        .from("users_with_roles")
+        .select("role_name, email")
+        .eq("user_id", userId)
+        .single();
+        console.log(roleData, "role data is her")
 
-        console.log("Auth user:", user);
+      if (roleError) throw new Error(roleError.message);
+      if (!roleData) throw new Error("No role assigned to this user");
 
-        let role = "visitor"; // Default role
+      const roleName = roleData.role_name;
+      console.log('rolename is her',roleName)
 
-        try {
-          // 🔹 SOLUTION: Use two separate queries to avoid join issues
-          // First, get the role_id from user_roles
-          const { data: userRoleData, error: userRoleError } = await supabase
-            .from("user_roles")
-            .select("role_id")
-            .eq("user_id", user.id)
-            .maybeSingle(); 
+      // 3. Save user in Redux
+      dispatch(
+        setUser({
+          user_id: userId,
+          email: roleData.email,
+          role: roleName,
+        })
+      );
 
-          if (userRoleError) {
-            console.error("Error fetching user role ID:", userRoleError.message);
-            // Continue with default role instead of throwing error
-          } else if (userRoleData && userRoleData.role_id) {
-            // Then, get the role name from roles table
-            const { data: roleData, error: roleError } = await supabase
-              .from("roles")
-              .select("name")
-              .eq("id", userRoleData.role_id)
-              .maybeSingle();
-
-            if (roleError) {
-              console.error("Error fetching role name:", roleError.message);
-              // Continue with default role
-            } else if (roleData) {
-              role = roleData.name;
-            }
-          } else {
-            console.warn("No role found for user, using default 'visitor' role");
-          }
-        } catch (roleFetchError) {
-          console.error("Error in role fetching process:", roleFetchError);
-          // Continue with default role instead of breaking login
-        }
-
-        console.log("User role:", role);
-
-        // 🔹 Store role in cookie
-        Cookies.set("role", role, { expires: 7 });
-
-        // 🔹 Dispatch to Redux
-        dispatch( 
-          setSession({
-            session: userSession,
-            user: {
-              id: user.id,
-              name,
-              lastname,
-              email: user.email,
-              role,
-            },
-          })
-        );
-
-        // 🔹 Redirect based on role
-        if (role === "admin") {
-          router.push("/admin");
-        } else if (role === "superadmin") {
-          router.push("/product");
-        } else {
-          router.push("/visitor");
-        }
-
-        setToast({
-          open: true,
-          message: "Login successful!",
-          severity: "success",
-        });
+      // 4. Redirect based on role
+      if (roleName === "superadmin") {
+        router.push("/superadmin");
+      } else if (roleName === "admin") {
+        router.push("/admin");
       } else {
-        throw new Error("No session or user data returned");
+        router.push("/visitor");
       }
-    } catch (err: any) {
-      console.error("Login error:", err);
+
       setToast({
         open: true,
-        message: err.message || "Login failed. Please check your credentials.",
+        message: `Login successful! Redirecting to ${roleName} dashboard...`,
+        severity: "success",
+      });
+    } catch (err: any) {
+      console.error("Login error:", err.message);
+      setToast({
+        open: true,
+        message: err.message || "Login failed. Please try again.",
         severity: "error",
       });
     } finally {
@@ -144,11 +104,8 @@ export default function LoginPage() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
-      
       if (error) throw error;
     } catch (error: any) {
       setToast({
@@ -170,19 +127,11 @@ export default function LoginPage() {
         px: 2,
       }}
     >
-      <Paper
-        elevation={6}
-        sx={{ p: 4, width: "100%", maxWidth: 400, borderRadius: 2 }}
-      >
+      <Paper elevation={6} sx={{ p: 4, width: "100%", maxWidth: 400, borderRadius: 2 }}>
         <Typography variant="h5" align="center" gutterBottom fontWeight="bold">
           Welcome Back
         </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          align="center"
-          mb={3}
-        >
+        <Typography variant="body2" color="text.secondary" align="center" mb={3}>
           Sign in to your account
         </Typography>
 

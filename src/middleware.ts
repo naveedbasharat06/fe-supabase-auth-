@@ -13,7 +13,7 @@ export async function middleware(req: NextRequest) {
       global: { headers: { Authorization: req.headers.get("Authorization")! } },
     }
   )
-// const ProtectedRoutes = ["/dashboard ","/admin"]
+const ProtectedRoutes = ["/dashboard ","/admin"]
 
 
 const role = req.cookies.get("role")?.value
@@ -39,6 +39,7 @@ console.log(role ,"role is here ")
 
 const {data:user, error} = await supabase.auth.getSession()
 if (!user)return NextResponse.redirect(new URL("/login", req.url)) 
+  console.log(user)
 
 return NextResponse.next()
 }
